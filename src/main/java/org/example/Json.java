@@ -1,15 +1,19 @@
 package org.example;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.models.Funcionario;
+
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Json
-{
-    public static void main( String[] args ) {
+public class Json {
+    public static void main(String[] args) {
         if (args.length != 1) {
             System.out.println("Nenhum caminho foi fornecido, execute o programa usando: 'java Json <caminho-absoluto>'");
             return;
@@ -20,57 +24,51 @@ public class Json
             return;
         }
         Map<String, Integer> habitantesPorCidade = new HashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Funcionario[] funcionario;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Funcionarios[] funcionario = objectMapper.readValue(caminho, Funcionarios[].class);
-            double maiorSalario = Double.MIN_VALUE;
-            int maiorIdade = Integer.MIN_VALUE;
-            Funcionarios funcionarioMaiorSalario = null;
-            Funcionarios funcionarioMaisVelho = null;
-            List<Funcionarios> funcionariosMaiorSalario = new ArrayList<>();
-            List<Funcionarios> funcionariosMaisVelhos = new ArrayList<>();
-            for (Funcionarios f : funcionario) {
-                if (f.salario > maiorSalario) {
-                    maiorSalario = f.salario;
-                    funcionariosMaiorSalario.clear();
-                    funcionariosMaiorSalario.add(f);
-                }  else if (f.salario == maiorSalario) {
-                    funcionariosMaiorSalario.add(f);
-                }
-
-
-                if (f.idade > maiorIdade) {
-                    maiorIdade = f.idade;
-                    funcionariosMaisVelhos.clear();
-                    funcionariosMaisVelhos.add(f);
-                } else if(f.idade == maiorIdade) {
-                    funcionariosMaisVelhos.add(f);
-                }
-                habitantesPorCidade.put(f.cidade,habitantesPorCidade.getOrDefault(f.cidade, 0) + 1 );
-
+            funcionario = objectMapper.readValue(caminho, Funcionario[].class);
+        } catch (IOException exception) {
+            throw new RuntimeException("Erro ao ler o arquivo", exception);
+        }
+        BigDecimal maiorSalario = BigDecimal.ZERO;
+        int maiorIdade = Integer.MIN_VALUE;
+        Funcionario funcionarioMaiorSalario = null;
+        Funcionario funcionarioMaisVelho = null;
+        List<Funcionario> funcionariosMaiorSalario = new ArrayList<>();
+        List<Funcionario> funcionariosMaisVelhos = new ArrayList<>();
+        for (Funcionario f : funcionario) {
+            if (f.getSalario().compareTo(maiorSalario) > 0) {
+                maiorSalario = f.getSalario();
+                funcionariosMaiorSalario.clear();
+                funcionariosMaiorSalario.add(f);
+            } else if (f.getSalario().compareTo(maiorSalario) == 0) {
+                funcionariosMaiorSalario.add(f);
             }
-            for (Funcionarios f : funcionariosMaiorSalario) {
-                System.out.println("Funcionario com o maior salário:  " + f.nome + " " + f.sobrenome + " " + f.salario);
-            }
-            System.out.println("Funcionarios mais velho: ");
 
-            for (Funcionarios f : funcionariosMaisVelhos) {
-                System.out.println(" " + f.nome + " " + f.sobrenome + " " + f.idade);
+
+            if (f.getIdade() > maiorIdade) {
+                maiorIdade = f.getIdade();
+                funcionariosMaisVelhos.clear();
+                funcionariosMaisVelhos.add(f);
+            } else if (f.getIdade() == maiorIdade) {
+                funcionariosMaisVelhos.add(f);
             }
-            int contador = 0;
-            int tamanho = habitantesPorCidade.size();
-            System.out.println("{");
-            for (Map.Entry<String, Integer> entry : habitantesPorCidade.entrySet()) {
-                System.out.print("  \"" + entry.getKey() + "\": " + entry.getValue());
-                contador++;
-                if (contador < tamanho) {
-                    System.out.println(",");
-                } else {
-                    System.out.println();
-                }                }
-            System.out.println("}");
-        } catch (IOException e) {
-            e.printStackTrace();
+            habitantesPorCidade.put(f.getCidade(), habitantesPorCidade.getOrDefault(f.getCidade(), 0) + 1);
+            habitantesPorCidade.compute(f.getCidade(), (cidade, quantidade) -> quantidade == null  ? 1 : quantidade + 1);
+        }
+        System.out.println("Funcionarios com o maior salário: ");
+        for (Funcionario f : funcionariosMaiorSalario) {
+            System.out.println(" " + f.getNome() + " " + f.getSobrenome() + " " + f.getSalario());
+        }
+        System.out.println("Funcionarios mais velho: ");
+        for (Funcionario f : funcionariosMaisVelhos) {
+            System.out.println(" " + f.getNome() + " " + f.getSobrenome() + " " + f.getIdade());
+        }
+        try {
+            System.out.println(objectMapper.writeValueAsString(habitantesPorCidade));
+        } catch (JsonProcessingException e) {
+            System.err.println("Erro ao converter o mapa para JSON: " + e.getMessage());
         }
     }
 }
