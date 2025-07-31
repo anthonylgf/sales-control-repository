@@ -33,8 +33,6 @@ public class Json {
         }
         BigDecimal maiorSalario = BigDecimal.ZERO;
         int maiorIdade = Integer.MIN_VALUE;
-        Funcionario funcionarioMaiorSalario = null;
-        Funcionario funcionarioMaisVelho = null;
         List<Funcionario> funcionariosMaiorSalario = new ArrayList<>();
         List<Funcionario> funcionariosMaisVelhos = new ArrayList<>();
         for (Funcionario f : funcionario) {
