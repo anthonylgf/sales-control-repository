@@ -54,17 +54,24 @@ public class Json {
             } else if (f.getIdade() == maiorIdade) {
                 funcionariosMaisVelhos.add(f);
             }
-            habitantesPorCidade.put(f.getCidade(), habitantesPorCidade.getOrDefault(f.getCidade(), 0) + 1);
-            habitantesPorCidade.compute(f.getCidade(), (cidade, quantidade) -> quantidade == null  ? 1 : quantidade + 1);
+            habitantesPorCidade.compute(f.getCidade(), (cidade, quantidade) -> quantidade == null ? 1 : quantidade + 1);
         }
-        System.out.println("Funcionarios com o maior salário: ");
-        for (Funcionario f : funcionariosMaiorSalario) {
-            System.out.println(" " + f.getNome() + " " + f.getSobrenome() + " " + f.getSalario());
+        for (int i = 0; i < funcionariosMaiorSalario.size(); i++) {
+            Funcionario f = funcionariosMaiorSalario.get(i);
+            System.out.print(f.getNome() + " " + f.getSobrenome());
+            if (i < funcionariosMaiorSalario.size() - 1) {
+                System.out.print(", ");
+            }
         }
-        System.out.println("Funcionarios mais velho: ");
-        for (Funcionario f : funcionariosMaisVelhos) {
-            System.out.println(" " + f.getNome() + " " + f.getSobrenome() + " " + f.getIdade());
+        System.out.println();
+        for (int i = 0; i < funcionariosMaisVelhos.size(); i++) {
+            Funcionario f = funcionariosMaisVelhos.get(i);
+            System.out.print(f.getNome() + " " + f.getSobrenome());
+            if (i < funcionariosMaisVelhos.size() - 1) {
+                System.out.print(", ");
+            }
         }
+        System.out.println();
         try {
             System.out.println(objectMapper.writeValueAsString(habitantesPorCidade));
         } catch (JsonProcessingException e) {
