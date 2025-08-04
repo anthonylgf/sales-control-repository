@@ -1,6 +1,7 @@
 package org.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.models.Funcionario;
 
@@ -11,11 +12,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Json {
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.out.println("Nenhum caminho foi fornecido, execute o programa usando: 'java Json <caminho-absoluto>'");
+            System.out.println("Nenhum caminho foi fornecido, execute o programa usando: ' java -jar target\\Json-1.0-SNAPSHOT.jar <caminho-absoluto>'");
             return;
         }
         File caminho = new File(args[0]);
@@ -26,8 +28,11 @@ public class Json {
         Map<String, Integer> habitantesPorCidade = new HashMap<>();
         ObjectMapper objectMapper = new ObjectMapper();
         Funcionario[] funcionario;
+
         try {
-            funcionario = objectMapper.readValue(caminho, Funcionario[].class);
+            JsonNode root = objectMapper.readTree(caminho);
+            JsonNode arrayNode = root.get("funcionarios");
+            funcionario = objectMapper.readValue(arrayNode.toString(), Funcionario[].class);
         } catch (IOException exception) {
             throw new RuntimeException("Erro ao ler o arquivo", exception);
         }
@@ -44,7 +49,6 @@ public class Json {
                 funcionariosMaiorSalario.add(f);
             }
 
-
             if (f.getIdade() > maiorIdade) {
                 maiorIdade = f.getIdade();
                 funcionariosMaisVelhos.clear();
@@ -54,22 +58,9 @@ public class Json {
             }
             habitantesPorCidade.compute(f.getCidade(), (cidade, quantidade) -> quantidade == null ? 1 : quantidade + 1);
         }
-        for (int i = 0; i < funcionariosMaiorSalario.size(); i++) {
-            Funcionario f = funcionariosMaiorSalario.get(i);
-            System.out.print(f.getNome() + " " + f.getSobrenome());
-            if (i < funcionariosMaiorSalario.size() - 1) {
-                System.out.print(", ");
-            }
-        }
-        System.out.println();
-        for (int i = 0; i < funcionariosMaisVelhos.size(); i++) {
-            Funcionario f = funcionariosMaisVelhos.get(i);
-            System.out.print(f.getNome() + " " + f.getSobrenome());
-            if (i < funcionariosMaisVelhos.size() - 1) {
-                System.out.print(", ");
-            }
-        }
-        System.out.println();
+        System.out.println(funcionariosMaiorSalario.stream().map(f -> " " + f.getNome() + " " + f.getSobrenome()).collect(Collectors.joining(", ")));
+        ;
+        System.out.println(funcionariosMaisVelhos.stream().map(f -> " " + f.getNome() + " " + f.getSobrenome()).collect(Collectors.joining(", ")));
         try {
             System.out.println(objectMapper.writeValueAsString(habitantesPorCidade));
         } catch (JsonProcessingException e) {
